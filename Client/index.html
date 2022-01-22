@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Hunt the Wumpus</title>
+	<script src="index.js" type="module" defer></script>
+	<link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+	<main>
+		<div id="game">
+			<div class="panel">
+				<div class="stats">
+					<p>Шаги: <span id="steps"></span></p>
+					<p>Стрел потрачен: <span id="shoots"></span></p>
+				</div>
+				<div id="info">
+					<p id="wumpus-info" class="hide">Вы чувствуете вонь</p>
+					<p id="bats-info" class="hide">Вы слышите шелест</p>
+					<p id="pit-info" class="hide">Вы чувствуете скозняк</p>
+				</div>
+			</div>
+			<div id="map"></div>
+			<div id="controls">
+			</div>
+		</div>
+	</main>
+</body>
+</html>

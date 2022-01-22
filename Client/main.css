@@ -1,0 +1,103 @@
+html, body {
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+	background-color: rgb(66, 57, 32);
+}
+
+main {
+    max-width: 737px;
+    margin: 50px auto 0;
+}
+
+#game {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+}
+
+#map {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.room {
+	width: 50px;
+	height: 50px;
+	background-color: bisque;
+	border: 4px solid black;
+	position: relative;
+	overflow: hidden;
+}
+
+#info {
+	color: bisque;
+	border: 4px solid black;
+	text-align: center;
+}
+
+#controls {
+	color: bisque;
+}
+
+.stats {
+	color: bisque;
+	border: 4px solid black;
+	text-align: center;
+	min-width: 170px;
+}
+
+.row {
+	display: flex;
+}
+
+.player {
+	background: url("hero.svg") no-repeat center;
+	background-size: 100% 100%;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	z-index: 1;
+}
+
+.hide {
+	display: none;
+}
+
+.footprint {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	background: url("footprint.svg") no-repeat center;
+	background-size: 100% 100%;
+}
+
+.control-keys {
+	display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
+
+.control-keys p {
+	grid-area: 1 / 1 / 2 / 4;
+	justify-self: center;
+}
+
+.control-keys .up {
+	grid-area: 2 / 2 / 3 / 3;
+}
+
+.control-keys .left {
+	grid-area: 3;
+}
+
+.control-keys .down {
+	grid-area: 3;
+}
+
+.control-keys .right {
+	grid-area: 3;
+}
