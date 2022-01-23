@@ -1,3 +1,7 @@
+using System.Text;
+
+Console.OutputEncoding = Encoding.UTF8;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,6 +19,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(opt =>
+{
+	opt.AllowAnyHeader();
+	opt.AllowAnyMethod();
+	opt.AllowAnyOrigin();
+});
 
 app.UseHttpsRedirection();
 

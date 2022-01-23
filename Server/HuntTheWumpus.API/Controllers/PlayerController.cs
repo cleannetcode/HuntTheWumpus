@@ -13,17 +13,17 @@ namespace HuntTheWumpus.API.Controllers
 			_logger = logger;
 		}
 
-		[HttpGet]
-		public bool Move()
+		[HttpPost("moveState")]
+		public IActionResult Move()
 		{
-
+			return Ok();
 		}
 
 
-		[HttpGet]
-		public bool Attack()
+		[HttpPost("attackState")]
+		public IActionResult Attack()
 		{
-
+			return Ok();
 		}
 	}
 }
