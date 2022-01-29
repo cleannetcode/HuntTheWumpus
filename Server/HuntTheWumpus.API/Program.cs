@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 Console.OutputEncoding = Encoding.UTF8;
 
@@ -22,9 +22,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(opt =>
 {
-	opt.AllowAnyHeader();
-	opt.AllowAnyMethod();
-	opt.AllowAnyOrigin();
+    opt.AllowAnyHeader();
+    opt.AllowAnyMethod();
+    opt.AllowAnyOrigin();
 });
 
 app.UseHttpsRedirection();

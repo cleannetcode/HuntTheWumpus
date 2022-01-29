@@ -1,6 +1,5 @@
 import GameObject from "./game-object.js";
 
-
 export default class Footprint extends GameObject {
 	/**
 	 * @param {number} x
@@ -13,11 +12,6 @@ export default class Footprint extends GameObject {
 	render() {
 		const element = document.createElement('div');
 		element.classList.add('footprint');
-
-		// const image = document.createElement('img');
-		// image.src = "footprint.svg";
-		// element.appendChild(image);
-
 		return element;
 	}
 }
