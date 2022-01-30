@@ -1,10 +1,8 @@
 ﻿namespace HuntTheWumpus.API.Domain.GameObjects
 {
-	public class GameMap
+    public class GameMap
     {
-        private readonly GameObject[] _gameObjects;
         private readonly Room[,] _rooms;
-        private readonly uint _size;
 
         public GameMap(GameObject[] gameObjects, uint size)
         {
@@ -13,8 +11,7 @@
                 throw new ArgumentException("argument gameObjects cannot be null or undefiend!");
             }
 
-            _gameObjects = gameObjects;
-            _size = size;
+            Size = size;
 
             _rooms = new Room[size, size];
 
@@ -32,6 +29,7 @@
                 room.Add(gameObject);
             }
         }
+        public uint Size { get; private set; }
 
         public Room GetRoom(uint x, uint y) => _rooms[x, y];
 
@@ -43,13 +41,13 @@
                     return gameObject.Y > 0;
 
                 case Direction.Down:
-                    return gameObject.Y < (_size - 1);
+                    return gameObject.Y < (Size - 1);
 
                 case Direction.Left:
                     return gameObject.X > 0;
 
                 case Direction.Right:
-                    return gameObject.X < (_size - 1);
+                    return gameObject.X < (Size - 1);
 
                 default:
                     return false;

@@ -8,8 +8,11 @@
         Left = 4
     }
 
-    public static class DirectionExtension
+    public static class DirectionModule
     {
-        //public static Direction Random => new Random().Next(1, 5);
+        public static Direction GetRandomDirection(Random random)
+        {
+            return (Direction)random.Next(0, 5);
+        }
     }
 }

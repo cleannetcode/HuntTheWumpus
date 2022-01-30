@@ -1,9 +1,9 @@
-import GameV2 from "./game-v2.js";
-import Game from "./game.js";
+import MoveableObject from "./game-objects/moveable-object.js";
+import Application from "./Application.js";
 
-const app = new Game();
-app.run();
+// const app = new Game();
+// app.run();
 
-const gameV2 = new GameV2();
-gameV2.init();
-document.app = gameV2;
+const app = new Application();
+app.init();
+document.app = app;

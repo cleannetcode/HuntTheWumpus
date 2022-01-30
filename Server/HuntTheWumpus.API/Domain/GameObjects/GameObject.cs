@@ -8,7 +8,7 @@
             Y = x;
         }
 
-        public uint X { get; protected set; }
-        public uint Y { get; protected set; }
+        public uint X { get; set; }
+        public uint Y { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using HuntTheWumpus.API.Domain;
+﻿using System.Collections.Generic;
+using HuntTheWumpus.API.Domain;
 using HuntTheWumpus.API.Domain.GameObjects;
 
 namespace HuntTheWumpus.API
@@ -8,6 +9,9 @@ namespace HuntTheWumpus.API
         private readonly List<Guid> _players;
         private uint _steps;
         private uint _shoots;
+        private Player _player;
+        private Wumpus _wumpus;
+        private GameMap _map;
 
         public Game()
         {
@@ -19,16 +23,17 @@ namespace HuntTheWumpus.API
         public bool IsRunning { get; private set; }
         public Guid[] Players => _players.ToArray();
 
-        public bool Start(Guid playerId)
+        public (uint X, uint Y) Start(Guid playerId, uint mapSize)
         {
             if (IsRunning)
             {
-                return false;
+                return (_player.X, _player.Y);
             }
 
             IsRunning = true;
             _players.Add(playerId);
-            return true;
+            Start(mapSize);
+            return (_player.X, _player.Y);
         }
 
         public bool Restart(Guid playerId)
@@ -40,24 +45,21 @@ namespace HuntTheWumpus.API
             return true;
         }
 
-
-        private Player _player;
-        private Wumpus _wumpus;
-        private GameMap _map;
-
-        public void Move(Direction direction)
+        public (uint X, uint Y) Move(Direction direction)
         {
             if (!_player.IsAlive)
             {
-                return;
+                return (_player.X, _player.Y);
             }
 
-            const x = _player.X;
-            const y = _player.Y;
+            var x = _player.X;
+            var y = _player.Y;
 
             MoveGameObject(_player, direction);
-            this.#placeFootprint(x, y);
+            PlaceFootprint(x, y);
             _steps++;
+
+            return (_player.X, _player.Y);
         }
 
         public void Attack(Direction direction)
@@ -87,18 +89,16 @@ namespace HuntTheWumpus.API
             }
         }
 
-        private void Start()
+        private void Start(uint mapSize)
         {
-            const uint size = 5;
-
-            var possibleCoordinates = new (uint X, uint Y)[size * size];
+            var possibleCoordinates = new (uint X, uint Y)[mapSize * mapSize];
             var coordinate = (X: 0u, Y: 0u);
 
-            for (var x = 0u; x < size; x++)
+            for (var x = 0u; x < mapSize; x++)
             {
-                for (var y = 0u; y < size; y++)
+                for (var y = 0u; y < mapSize; y++)
                 {
-                    possibleCoordinates[x + y * size] = (x, y);
+                    possibleCoordinates[x + y * mapSize] = (x, y);
                 }
             }
 
@@ -112,15 +112,15 @@ namespace HuntTheWumpus.API
             gameObjects.Add(_player);
             gameObjects.Add(_wumpus);
 
-            for (let i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                ({ coordinate, possibleCoordinates } = this.#getRandomCoordinate(possibleCoordinates));
-			gameObjects.push(new Pit(coordinate.x, coordinate.y));
-                ({ coordinate, possibleCoordinates } = this.#getRandomCoordinate(possibleCoordinates));
-			gameObjects.push(new Bats(coordinate.x, coordinate.y));
+                (coordinate, possibleCoordinates) = GetRandomCoordinate(possibleCoordinates);
+                gameObjects.Add(new Pit(coordinate.X, coordinate.Y));
+                (coordinate, possibleCoordinates) = GetRandomCoordinate(possibleCoordinates);
+                gameObjects.Add(new Bats(coordinate.X, coordinate.Y));
             }
 
-            this.map = new GameMap(gameObjects, size);
+            _map = new GameMap(gameObjects.ToArray(), mapSize);
         }
 
         private ((uint X, uint Y), (uint X, uint Y)[]) GetRandomCoordinate((uint X, uint Y)[] possibleCoordinates)
@@ -132,153 +132,121 @@ namespace HuntTheWumpus.API
             return (coordinate, newPossibleCoordinates);
         }
 
-
-        /**
-         * @param {MoveableObject} moveableObject
-         * @param {Direction} direction
-         * @returns
-         */
-        private void MoveGameObject(moveableObject, direction)
+        private void MoveGameObject(MoveableObject moveableObject, Direction direction)
         {
-            if (!direction)
-            {
-                throw Error('direction cannot be null or undefined');
-            }
-
-            if (!moveableObject || !moveableObject instanceof MoveableObject) {
-                throw Error('only MoveableObject can be moved by Game.moveGameObject');
-            }
-
-            if (!this.map.isValidDirection(moveableObject, direction))
+            if (!_map.IsValidDirection(moveableObject, direction))
             {
                 return;
             }
 
-            let room = this.map.getRoom(moveableObject.x, moveableObject.y);
-            room.remove(moveableObject);
+            var room = _map.GetRoom(moveableObject.X, moveableObject.Y);
+            room.Remove(moveableObject);
 
-            const { x, y } = moveableObject.move(direction);
+            var (x, y) = moveableObject.Move(direction);
 
-            room = this.map.getRoom(x, y);
-            room.add(moveableObject);
+            room = _map.GetRoom(x, y);
+            room.Add(moveableObject);
         }
 
-	#update() {
-		if (!this.player.isAlive)
-{
-    const result = confirm("Ты проиграл!\nПопробуешь еще раз?");
-
-    if (result)
-    {
-        this.#restart();
-			}
-
-    return;
-}
-
-if (!this.wumpus.isAlive)
-{
-    const result = confirm("Ты победил!\nПопробуешь еще раз?");
-
-    if (result)
-    {
-        this.#restart();
-			}
-
-    return;
-}
-
-const roomWithPlayer = this.map.getRoom(this.player.x, this.player.y);
-
-const wumpus = roomWithPlayer.getObject(x => x instanceof Wumpus);
-const pit = roomWithPlayer.getObject(x => x instanceof Pit);
-const bats = roomWithPlayer.getObject(x => x instanceof Bats);
-
-if (wumpus || pit)
-{
-    this.player.die();
-    this.#update();
-		}
-else if (bats)
-{
-    const x = Math.floor(Math.random() * this.map.size);
-    const y = Math.floor(Math.random() * this.map.size);
-
-    let room = this.map.getRoom(this.player.x, this.player.y);
-    room.remove(this.player);
-
-    this.player.x = x;
-    this.player.y = y;
-
-    room = this.map.getRoom(this.player.x, this.player.y);
-    room.add(this.player);
-    this.#update();
-		}
-else
-{
-    const isWumpusSleep = Math.round(Math.random());
-    if (!isWumpusSleep)
-    {
-        this.#moveGameObject(this.wumpus, Direction.random);
-				const roomWithWumpus = this.map.getRoom(this.wumpus.x, this.wumpus.y);
-        const player = roomWithWumpus.getObject(x => x instanceof Player);
-        if (player)
+        private void Update()
         {
-            this.player.die();
-            this.#update();
-				}
-    }
-}
+            var random = new Random();
 
-this.#updateGameInfo();
-	}
+            if (!_player.IsAlive || !_wumpus.IsAlive)
+            {
+                return;
+            }
 
+            var roomWithPlayer = _map.GetRoom(_player.X, _player.Y);
 
-	#updateGameInfo() {
-		let gameObjects = [];
+            var wumpus = roomWithPlayer.GetObject(x => x is Wumpus);
+            var pit = roomWithPlayer.GetObject(x => x is Pit);
+            var bats = roomWithPlayer.GetObject(x => x is Bats);
 
-for (let x = this.player.x - 1; x <= this.player.x + 1; x++)
-{
-    for (let y = this.player.y - 1; y <= this.player.y + 1; y++)
-    {
+            if (wumpus != null || pit != null)
+            {
+                _player.Die();
+            }
+            else if (bats != null)
+            {
+                var x = (uint)random.Next(0, (int)_map.Size);
+                var y = (uint)random.Next(0, (int)_map.Size);
 
-        if (x == this.player.x && y == this.player.y)
-        {
-            continue;
+                var room = _map.GetRoom(_player.X, _player.Y);
+                room.Remove(_player);
+
+                _player.X = x;
+                _player.Y = y;
+
+                room = _map.GetRoom(_player.X, _player.Y);
+                room.Add(_player);
+                Update();
+            }
+            else
+            {
+                var isWumpusSleep = random.Next(0, 2) == 0;
+                if (!isWumpusSleep)
+                {
+                    var direction = DirectionModule.GetRandomDirection(random);
+                    MoveGameObject(_wumpus, direction);
+                    var roomWithWumpus = _map.GetRoom(_wumpus.X, _wumpus.Y);
+                    var player = roomWithWumpus.GetObject(x => x is Player);
+                    if (player != null)
+                    {
+                        _player.Die();
+                        Update();
+                    }
+                }
+            }
+
+            UpdateGameInfo();
         }
 
-        if (x < 0 || y < 0 || x >= this.map.size || y >= this.map.size)
+        private string[] UpdateGameInfo()
         {
-            continue;
+            var gameObjects = new List<GameObject>();
+
+            for (var x = _player.X - 1; x <= _player.X + 1; x++)
+            {
+                for (var y = _player.Y - 1; y <= _player.Y + 1; y++)
+                {
+
+                    if (x == _player.X && y == _player.Y)
+                    {
+                        continue;
+                    }
+
+                    if (x < 0 || y < 0 || x >= _map.Size || y >= _map.Size)
+                    {
+                        continue;
+                    }
+
+                    var room = _map.GetRoom(x, y);
+                    gameObjects.AddRange(room.GetObjects());
+                }
+            }
+
+            var info = new HashSet<string>();
+
+            foreach (var gameObject in gameObjects)
+            {
+                if (gameObject is Pit)
+                {
+                    info.Add("Вы чувствуете вонь");
+                }
+
+                if (gameObject is Bats)
+                {
+                    info.Add("Вы слышите шелест");
+                }
+
+                if (gameObject is Wumpus)
+                {
+                    info.Add("Вы чувствуете скозняк");
+                }
+            }
+
+            return info.ToArray();
         }
-
-        const room = this.map.getRoom(x, y);
-        gameObjects.push(...room.getObjects());
     }
-}
-
-const wumpusInfoElement = document.getElementById('wumpus-info');
-const batsInfoElement = document.getElementById('bats-info');
-const pitInfoElement = document.getElementById('pit-info');
-
-pitInfoElement.className = "hide";
-batsInfoElement.className = "hide";
-wumpusInfoElement.className = "hide";
-
-for (const gameObject of gameObjects) {
-    if (gameObject instanceof Pit) {
-        pitInfoElement.className = "";
-    }
-
-    if (gameObject instanceof Bats) {
-        batsInfoElement.className = "";
-    }
-
-    if (gameObject instanceof Wumpus) {
-        wumpusInfoElement.className = "";
-    }
-}
-	}
-
-	}
 }

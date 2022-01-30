@@ -6,7 +6,7 @@
         {
         }
 
-        public (uint X, uint Y) move(Direction direction)
+        public (uint X, uint Y) Move(Direction direction)
         {
             switch (direction)
             {

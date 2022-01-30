@@ -3,10 +3,9 @@
     public class Room
     {
         private List<GameObject> _gameObjects;
-        public Room() { }
-        public Room(GameObject gameObject)
+        public Room()
         {
-            _gameObjects = new List<GameObject> { gameObject };
+            _gameObjects = new List<GameObject>();
         }
 
         public void Add(GameObject gameObject)
@@ -16,11 +15,10 @@
 
         public void Remove(GameObject gameObject)
         {
-            throw new NotImplementedException();
-            //_gameObjects.Remove(gameObject)
+            _gameObjects.Remove(gameObject);
         }
 
-        public GameObject[] getObjects()
+        public GameObject[] GetObjects()
         {
             return _gameObjects.ToArray();
         }
@@ -28,6 +26,6 @@
         public GameObject? GetObject(Func<GameObject, bool> predicate)
         {
             return _gameObjects.FirstOrDefault(predicate);
-	}
+        }
     }
 }

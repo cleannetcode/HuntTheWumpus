@@ -1,80 +1,84 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace HuntTheWumpus.API.Controllers
 {
-	public class ConnectionRequest
-	{
-		public Guid PlayerId { get; set; }
-	}
+    public class ConnectionRequest
+    {
+        public Guid PlayerId { get; set; }
+    }
 
-	[ApiController]
-	[Route("[controller]")]
-	public class GameController : ControllerBase
-	{
-		private readonly ILogger<GameController> _logger;
-		private static Game _game = new();
+    public class NewGame
+    {
+        public GameState GameState { get; set; }
+    }
 
-		public GameController(ILogger<GameController> logger)
-		{
-			_logger = logger;
-		}
+    [ApiController]
+    [Route("[controller]")]
+    public class GameController : ControllerBase
+    {
+        private readonly ILogger<GameController> _logger;
+        private readonly Game _game;
 
-		[HttpPost("newGame")]
-		public IActionResult Start()
-		{
-			if (_game.IsRunning)
-			{
-				_logger.LogWarning(GameErrors.GameAlreadyHasBeedStarted);
-				return BadRequest(new ProblemDetails { Detail = GameErrors.GameAlreadyHasBeedStarted });
-			}
+        public GameController(ILogger<GameController> logger)
+        {
+            _logger = logger;
+            _game = GameRepository.Get();
+        }
 
-			var playerId = Guid.NewGuid();
-			var isSuccess = _game.Start(playerId);
+        [HttpPost("newGame")]
+        public IActionResult Start()
+        {
+            if (_game.IsRunning)
+            {
+                _logger.LogWarning(GameErrors.GameAlreadyHasBeedStarted);
+                return BadRequest(new ProblemDetails { Detail = GameErrors.GameAlreadyHasBeedStarted });
+            }
 
-			if (isSuccess)
-			{
-				_logger.LogInformation("Игра успешно запущена");
-				return Ok(new { PlayerId = playerId });
-			}
+            var playerId = Guid.NewGuid();
+            const uint mapSize = 5;
+            var (playerX, playerY) = _game.Start(playerId, mapSize);
 
-			_logger.LogWarning(GameErrors.GameAlreadyHasBeedStarted);
-			return BadRequest(new ProblemDetails { Detail = GameErrors.GameAlreadyHasBeedStarted });
-		}
-
-
-		[HttpPost("connection")]
-		public IActionResult Connect([FromBody]ConnectionRequest request)
-		{
-			var playerId = request.PlayerId;
-
-			var isPlayerInGame = _game.Players.Contains(playerId);
+            _logger.LogInformation("Игра успешно запущена");
+            return Ok(new
+            {
+                PlayerId = playerId,
+                MapSize = mapSize
+            });
+        }
 
 
-			if(!isPlayerInGame)
-			{
-				_logger.LogWarning(GameErrors.PlayerIsNotInGame(playerId));
-				return BadRequest(new ProblemDetails { Detail = GameErrors.PlayerIsNotInGame(playerId) });
-			}
+        [HttpPost("connection")]
+        public IActionResult Connect([FromBody] ConnectionRequest request)
+        {
+            var playerId = request.PlayerId;
 
-			return Ok();
-		}
+            var isPlayerInGame = _game.Players.Contains(playerId);
 
-		[HttpPut("newGame")]
-		public IActionResult Restart()
-		{
-			var playerId = Guid.NewGuid();
-			_game.Restart(playerId);
+            if (!isPlayerInGame)
+            {
+                _logger.LogWarning(GameErrors.PlayerIsNotInGame(playerId));
+                return BadRequest(new ProblemDetails { Detail = GameErrors.PlayerIsNotInGame(playerId) });
+            }
 
-			_logger.LogInformation("Игра успешно запущена");
+            return Ok();
+        }
 
-			var cookieOptions = new CookieOptions
-			{
-				Path = "./",
-				Domain = "localhost"
-			};
+        [HttpPut("newGame")]
+        public IActionResult Restart()
+        {
+            var playerId = Guid.NewGuid();
+            _game.Restart(playerId);
 
-			HttpContext.Response.Cookies.Append("PlyerId", playerId.ToString(), cookieOptions);
-			return Ok(new { PlayerId = playerId });
-		}
-	}
+            _logger.LogInformation("Игра успешно запущена");
+
+            var cookieOptions = new CookieOptions
+            {
+                Path = "./",
+                Domain = "localhost"
+            };
+
+            HttpContext.Response.Cookies.Append("PlyerId", playerId.ToString(), cookieOptions);
+            return Ok(new { PlayerId = playerId });
+        }
+    }
 }
